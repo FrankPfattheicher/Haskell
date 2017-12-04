@@ -1,7 +1,7 @@
-name:                Chapter56
+name:                Chapter45
 version:             0.1.0.0
 synopsis:            Short description of your package
-homepage:            https://github.com/githubuser/Chapter56#readme
+homepage:            https://github.com/githubuser/Chapter45#readme
 license:             BSD3
 license-file:        LICENSE
 author:              Author name here
@@ -15,7 +15,7 @@ cabal-version:       >=1.10
 -- To avoid duplicated efforts in documentation and dealing with the
 -- complications of embedding Haddock markup inside cabal files, it is
 -- common to point users to the README.md file.
-description:         Please see the README on Github at <https://github.com/githubuser/Chapter56#readme>
+description:         Please see the README on Github at <https://github.com/githubuser/Chapter45#readme>
 
 library
   hs-source-dirs:      src
@@ -23,23 +23,23 @@ library
   build-depends:       base >= 4.7 && < 5
   default-language:    Haskell2010
 
-executable Chapter56-exe
+executable Chapter45-exe
   hs-source-dirs:      app
   main-is:             Main.hs
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   build-depends:       base
-                     , Chapter56
+                     , Chapter45
   default-language:    Haskell2010
 
-test-suite Chapter56-test
+test-suite Chapter45-test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
   main-is:             Spec.hs
   build-depends:       base
-                     , Chapter56
+                     , Chapter45
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   default-language:    Haskell2010
 
 source-repository head
   type:     git
-  location: https://github.com/githubuser/Chapter56
+  location: https://github.com/githubuser/Chapter45
