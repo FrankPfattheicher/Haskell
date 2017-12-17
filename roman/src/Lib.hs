@@ -14,17 +14,26 @@ roman 'C' = 100
 roman 'D' = 500
 roman 'M' = 1000
 
-parseRoman :: String -> Integer
-parseRoman "" = 0
-parseRoman (s : r : rs) = 
+fromRoman :: String -> Integer
+fromRoman "" = 0
+fromRoman (s : r : rs) = 
     let vs = roman s in
     let vr = roman r in
     --case (vs < vr) of
-    --    True -> vr - vs + (parseRoman rs)
-    --    False -> vs + (parseRoman (r : rs))
+    --    True -> vr - vs + (fromRoman rs)
+    --    False -> vs + (fromRoman (r : rs))
     if (vs < vr)
-    then vr - vs + (parseRoman rs)
-    else vs + (parseRoman (r : rs))
+    then vr - vs + (fromRoman rs)
+    else vs + (fromRoman (r : rs))
         
---parseRoman (r : rs) = (roman r) + (parseRoman rs)
+fromRoman (r : rs) = (roman r) + (fromRoman rs)
 
+
+toRoman :: Integer -> String
+toRoman 0 = ""
+toRoman n = 
+    let y = [x | x <- "MDCLXVI", n >= (roman x)] in
+    let z = y !! 0 in
+    let vz = roman(z) in
+        (z : toRoman (n - vz))
+        
