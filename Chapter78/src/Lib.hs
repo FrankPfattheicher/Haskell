@@ -5,4 +5,13 @@ module Lib
 someFunc :: IO ()
 someFunc = putStrLn "someFunc"
 
-x = 55
+test x 
+    | x < 5 = 8
+    | otherwise = 0
+
+
+f x = 
+    let y = test x
+    in
+        x + y
+
