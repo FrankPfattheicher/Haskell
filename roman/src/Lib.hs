@@ -106,6 +106,6 @@ toRoman3 :: Integer -> String
 toRoman3 0 = ""
 toRoman3 v = 
     case find (\(r,n) -> v >= n) roman3 of
-        Just (r1,v1) -> r1 ++ toRoman2 (v - v1)
+        Just (r1,v1) -> r1 ++ toRoman3 (v - v1)
         Nothing -> "<negative>"
         
