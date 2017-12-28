@@ -2,6 +2,8 @@ module Lib
     ( someFunc
     ) where
 
+import Data.Char 
+        
 someFunc :: IO ()
 someFunc = putStrLn "someFunc"
 
@@ -116,6 +118,68 @@ zip2 f (x:xs) (y:ys) =
 -- 3
 zip03 :: [a] -> [b] -> [(a, b)]
 zip03 as bs = zip2 (\a b -> (a,b)) as bs
+
+
+-- Chapter Exercises
+-- Data.Char
+
+-- 2
+xupper :: String -> String
+xupper s = [c | c <- s, isUpper c]
+
+-- 3
+capitalize :: String -> String
+capitalize [c] = [toUpper c] 
+capitalize (s:ss) = [toUpper s] ++ ss 
+
+-- 4
+capitalize2 :: String -> String
+capitalize2 [c] = [toUpper c] 
+capitalize2 (s:ss) = [toUpper s] ++ capitalize2 ss 
+
+-- 5
+capitalize3 :: String -> String
+capitalize3 [c] = [toUpper c] 
+capitalize3 s = [toUpper (head s)] ++ capitalize3 (tail s) 
+
+-- 6
+-- hä?
+
+-- Writing your own standard functions
+
+-- 1
+myOr :: [Bool] -> Bool
+myOr [x] = x
+myOr (True:_) = True
+myOr (False:xs) = myOr xs
+
+-- 2
+myAny :: (a -> Bool) -> [a] -> Bool
+myAny f [x] = f x
+myAny f (x:xs) = 
+    if f x
+    then True
+    else myAny f xs
+
+-- 3
+myElem :: Eq a => a -> [a] -> Bool
+myElem x [y] = x == y
+myElem x (y:ys) = (x == y) || (myElem x ys)
+
+-- 4
+myReverse :: [a] -> [a]
+myReverse [] = []
+myReverse [x] = [x]
+myReverse (x:xs) = (myReverse xs) ++ [x]
+
+-- 5
+squish :: [[a]] -> [a]
+squish [] = []
+squish [[a]] = [a]
+squish ([a]:as) = [a] ++ squish as
+
+
+
 
 -- chapter 10 - Folding lists
 
