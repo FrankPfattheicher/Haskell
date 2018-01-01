@@ -7,7 +7,9 @@ import Data.Char
 someFunc :: IO ()
 someFunc = putStrLn "someFunc"
 
+-------------------------------------------------------
 -- chapter 9 - Lists
+-------------------------------------------------------
 
 eftBool :: Bool -> Bool -> [Bool]
 eftBool min max = [min..max]
@@ -171,24 +173,83 @@ myReverse :: [a] -> [a]
 myReverse [] = []
 myReverse [x] = [x]
 myReverse (x:xs) = (myReverse xs) ++ [x]
+-- myReverse "blah"
+-- myReverse [1..5]
 
 -- 5
 squish :: [[a]] -> [a]
 squish [] = []
-squish [[a]] = [a]
-squish ([a]:as) = [a] ++ squish as
+squish [[x]] = [x]
+squish (x:xs) = x ++ squish xs
+-- squish ["abc","def"]
+   
+-- 6
+squishMap :: (a -> [b]) -> [a] -> [b]
+squishMap f [] = []
+squishMap f [x] = f x
+squishMap f (x:xs) = (f x) ++ squishMap f xs
+-- squishMap (\x -> [1, x, 3]) [2]
+-- squishMap (\x -> "WO "++[x]++" HOO ") "123"
 
+-- 7
+squishAgain :: [[a]] -> [a]
+squishAgain [] = []
+squishAgain (y:ys) = (squishMap (\x -> [x]) y) ++ squishAgain ys
+-- squishAgain ["abc","def"]
 
+-- 8
+myMaximumBy :: (a -> a -> Ordering) -> [a] -> a
+myMaximumBy f [x] = x
+myMaximumBy f (x:xs) = 
+    let y = myMaximumBy f xs in
+        if f x y == GT
+        then x
+        else y
 
+-- myMaximumBy compare  [1, 53, 9001, 10]
 
+-- 9
+myMinimumBy :: (a -> a -> Ordering) -> [a] -> a
+myMinimumBy f [x] = x
+myMinimumBy f (x:xs) = 
+    let y = myMinimumBy f xs in
+        if f x y == LT
+        then x
+        else y
+
+-- myMinimumBy compare  [1, 53, 9001, 10]
+
+-- 10
+myMaximum :: (Ord a) => [a] -> a
+myMaximum [x] = x
+myMaximum (x:xs) = 
+    let y = myMaximum xs in
+        if x > y
+        then x
+        else y
+
+myMinimum :: (Ord a) => [a] -> a
+myMinimum [x] = x
+myMinimum (x:xs) = 
+    let y = myMinimum xs in
+        if x < y
+        then x
+        else y
+
+-------------------------------------------------------
 -- chapter 10 - Folding lists
+-------------------------------------------------------
 
 
 
+-------------------------------------------------------
 -- chapter 11 - Algebraic data types
+-------------------------------------------------------
 
 
 
+-------------------------------------------------------
 -- chapter 12 - Signaling adversity
+-------------------------------------------------------
 
 
