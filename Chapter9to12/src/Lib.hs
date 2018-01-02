@@ -3,6 +3,7 @@ module Lib
     ) where
 
 import Data.Char 
+import Data.Time
         
 someFunc :: IO ()
 someFunc = putStrLn "someFunc"
@@ -240,6 +241,161 @@ myMinimum (x:xs) =
 -- chapter 10 - Folding lists
 -------------------------------------------------------
 
+-- Exercises: Understanding Folds
+
+-- foldl (flip (*)) 1 [1..3]
+-- f' = flip (*)
+-- (1 f' (2 f' (3 f' 1)))
+-- (((1 * 3) * 2) * 1)
+
+
+-- Exercises: Database Processing
+data DatabaseItem = DbString String
+    | DbNumber Integer
+    | DbDate UTCTime
+    deriving (Eq, Ord, Show)
+
+theDatabase :: [DatabaseItem]
+theDatabase =
+    [ DbDate (UTCTime (fromGregorian 1911 5 1) (secondsToDiffTime 34123))
+    , DbNumber 9001
+    , DbString "Hello, world!"
+    , DbNumber 19001
+    , DbDate (UTCTime (fromGregorian 1921 5 1) (secondsToDiffTime 34123))
+    ]    
+
+-- 1
+filterDbDate :: [DatabaseItem] -> [UTCTime]
+filterDbDate [] = []
+filterDbDate (x:xs) = case x of
+        DbDate dt -> [dt] ++ filterDbDate xs
+        _ -> filterDbDate xs
+
+-- 2
+filterDbNumber :: [DatabaseItem] -> [Integer]
+filterDbNumber [] = []
+filterDbNumber (x:xs) = case x of
+    DbNumber n -> [n] ++ filterDbNumber xs
+    _ -> filterDbNumber xs
+
+
+-- 3
+mostRecent :: [DatabaseItem] -> UTCTime
+mostRecent db = myMaximum (filterDbDate db)
+
+-- 4
+sumDb :: [DatabaseItem] -> Integer
+sumDb db = sum (filterDbNumber db)
+
+-- 5
+avgDb :: [DatabaseItem] -> Double
+avgDb db = (fromIntegral (sum ns)) / (fromIntegral (length ns))
+    where ns = filterDbNumber db
+
+-- Scans    
+fibs = 1 : scanl (+) 1 fibs
+fibsN x = fibs !! x    
+
+-- 1
+fibs20 = take 20 fibs
+
+-- 2
+fibs100 = takeWhile (< 100) fibs
+
+-- 3
+factR :: Integer -> Integer
+factR 0 = 1
+factR n = n * factR (n - 1)
+
+factS :: Integer -> Integer
+factS n = head $ reverse $ take (fromInteger n) (scanl (\x y -> x * y) 1 [2..])
+
+
+-- Chapter Exercises
+
+-- 1
+stops = "pbtdkg"
+vowels = "aeiou"
+
+-- 1a
+stop_vowel_stop :: String -> String -> [(Char,Char,Char)] 
+stop_vowel_stop stop vowel = [(s1, v, s2) | s1 <- stop, v <- vowel, s2 <- stop]
+
+-- 1b
+stop_vowel_stop_p = filter (\(s1,_,_) -> s1 == 'p') $ stop_vowel_stop stops vowels
+
+-- 1c
+-- [Char] --> [String]
+
+
+-- 2
+seekritFunc x =
+    div (sum (map length (words x)))
+    (length (words x))
+-- average word length
+
+-- 3
+seekritFunc2 x =
+    let s = sum (map length (words x))
+        n = length (words x) in
+    (fromIntegral s) / (fromIntegral n)
+
+-- Rewriting functions using folds
+
+-- 1
+myOr2 :: [Bool] -> Bool
+myOr2 = foldr (||) False
+
+-- 2
+myAny2 :: (a -> Bool) -> [a] -> Bool
+myAny2 f = foldr (\x y -> y || f x) False
+
+-- 3
+myElem2 :: Eq a => a -> [a] -> Bool
+myElem2 x xs = myAny (\a -> a == x) xs
+
+myElem3 :: Eq a => a -> [a] -> Bool
+myElem3 x xs = foldr (\a b -> b || a == x) False xs
+
+-- 4
+myReverse2 :: [a] -> [a]
+myReverse2 xs = foldl (\b a -> [a] ++ b) [] xs
+
+-- 5
+myMap2 :: (a -> b) -> [a] -> [b]
+myMap2 f xs = foldr (\a b -> [f a] ++ b) [] xs
+
+-- 6
+myFilter2 :: (a -> Bool) -> [a] -> [a]
+myFilter2 f xs = foldr (\a b -> if f a then [a] ++ b else b) [] xs
+
+-- 7
+squish2 :: [[a]] -> [a]
+squish2 xs = foldr (\a b -> a ++ b) [] xs
+
+-- 8
+squishMap2 :: (a -> [b]) -> [a] -> [b]
+squishMap2 f xs = foldr (\a b -> f a ++ b) [] xs
+-- squishMap2 (\x -> [1, x, 3]) [2]
+-- squishMap2 (\x -> "WO " ++ [x] ++ " OT ") "blah"
+
+-- 9
+squishAgain2 :: [[a]] -> [a]
+squishAgain2 xs = squishMap2 (\x -> x) xs
+
+-- 10
+myMaximumBy2 :: (a -> a -> Ordering) -> [a] -> a
+myMaximumBy2 f xs = foldl (\b a -> if (f b a) == GT then b else a) (head xs) xs
+-- myMaximumBy2 (\_ _ -> GT) [1..10]
+-- myMaximumBy2 (\_ _ -> LT) [1..10]
+-- myMaximumBy2 compare [1..10]
+
+-- 11
+myMinimumBy2 :: (a -> a -> Ordering) -> [a] -> a
+myMinimumBy2 f xs = foldl (\b a -> if (f b a) == LT then b else a) (head xs) xs
+-- myMinimumBy2 (\_ _ -> GT) [1..10]
+-- myMinimumBy2 (\_ _ -> LT) [1..10]
+-- myMinimumBy2 (\_ _ -> LT) [1..10]
 
 
 -------------------------------------------------------
