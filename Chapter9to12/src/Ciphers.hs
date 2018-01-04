@@ -1,5 +1,7 @@
 
-module Cipher where
+module Cipher 
+    ( cipher
+    ) where
 
 import Data.Char
 

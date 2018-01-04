@@ -1,10 +1,16 @@
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE FlexibleInstances #-}
+
 module Lib
     ( someFunc
     ) where
 
 import Data.Char 
 import Data.Time
-        
+import Data.Int
+import Data.List
+
+
 someFunc :: IO ()
 someFunc = putStrLn "someFunc"
 
@@ -385,14 +391,18 @@ squishAgain2 xs = squishMap2 (\x -> x) xs
 
 -- 10
 myMaximumBy2 :: (a -> a -> Ordering) -> [a] -> a
-myMaximumBy2 f xs = foldl (\b a -> if (f b a) == GT then b else a) (head xs) xs
+myMaximumBy2 f xs = foldl 
+                        (\b a -> if (f b a) == GT then b else a) 
+                        (head xs) xs
 -- myMaximumBy2 (\_ _ -> GT) [1..10]
 -- myMaximumBy2 (\_ _ -> LT) [1..10]
 -- myMaximumBy2 compare [1..10]
 
 -- 11
 myMinimumBy2 :: (a -> a -> Ordering) -> [a] -> a
-myMinimumBy2 f xs = foldl (\b a -> if (f b a) == LT then b else a) (head xs) xs
+myMinimumBy2 f xs = foldl 
+                        (\b a -> if (f b a) == LT then b else a) 
+                        (head xs) xs
 -- myMinimumBy2 (\_ _ -> GT) [1..10]
 -- myMinimumBy2 (\_ _ -> LT) [1..10]
 -- myMinimumBy2 (\_ _ -> LT) [1..10]
@@ -402,7 +412,631 @@ myMinimumBy2 f xs = foldl (\b a -> if (f b a) == LT then b else a) (head xs) xs
 -- chapter 11 - Algebraic data types
 -------------------------------------------------------
 
+-- Exercises: Vehicles
 
+data Price =
+    Price Integer 
+    deriving (Eq, Show)
+
+data Manufacturer =
+    Mini
+    | Mazda
+    | Tata
+    deriving (Eq, Show)
+
+data Airline =
+    PapuAir
+    | CatapultsR'Us
+    | TakeYourChancesUnited
+    deriving (Eq, Show)
+
+data Vehicle = 
+    Car Manufacturer Price
+    | Plane Airline Integer
+    deriving (Eq, Show)
+
+myCar = Car Mini (Price 14000)
+urCar = Car Mazda (Price 20000)
+clownCar = Car Tata (Price 7000)
+doge = Plane PapuAir 30
+
+-- 2
+isCar :: Vehicle -> Bool
+isCar c = case c of
+    Car _ _ -> True
+    _ -> False
+
+isPlane :: Vehicle -> Bool
+isPlane p = case p of
+    Plane _ _ -> True
+    _ -> False
+
+areCars :: [Vehicle] -> [Bool]
+areCars vs = map (\v -> isCar v) vs
+-- areCars [myCar, urCar, clownCar, doge]
+
+-- 3
+getManu :: Vehicle -> Manufacturer
+getManu v = case v of
+    Car m _ -> m
+    Plane _ _ -> undefined
+
+-- 4 - Error: Non-exhaustive patterns in case
+
+-- 5
+-- Aufpassen: doge = Plane PapuAir 30
+
+
+-- Exercises: Cardinality
+-- 1 - 1
+-- 2 - 3
+-- 3 - 0x10000
+
+-- Exercises: For Example
+
+data Example = MakeExample deriving Show
+data Example2 = MakeExample2 Int deriving Show
+
+-- 1 - Example
+-- 2 - Show
+-- 3 - MakeExample2 :: Int -> Example2
+
+
+-- newtype
+
+class TooMany a where
+    tooMany :: a -> Bool
+
+instance TooMany Int where
+    tooMany n = n > 42
+
+newtype Goats =
+    Goats Int deriving (Eq, Show)
+newtype Cows =
+    Cows Int deriving (Eq, Show)
+
+tooManyGoats :: Goats -> Bool
+tooManyGoats (Goats n) = n > 42
+
+instance TooMany Goats where
+    tooMany (Goats n) = n > 43
+
+-- Exercises: Logic Goats
+
+-- 1
+instance TooMany (Int, String) where
+    tooMany (i, s) = i > 43
+
+-- 2
+instance TooMany (Int, Int) where
+    tooMany (i, j) = (i + j) > 43
+
+-- 3
+instance (Num a, TooMany a) => TooMany (a, a) where
+    tooMany (i, j) = False
+
+-- ????????????????????????????????????????????????????????????????
+
+
+-- Exercises: Pity the Bool
+
+-- 1 - 4, i.e. (2 + 2)
+data BigSmall =
+    Big Bool
+    | Small Bool
+    deriving (Eq, Show)
+
+-- 2 - 258, i.e. (256 + 2)
+data NumberOrBool =
+    Numba Int8
+    | BoolyBool Bool
+    deriving (Eq, Show)
+
+myNumba = Numba (-128)
+
+
+-- Record syntax
+
+data Person =
+    Person { pname :: String
+           , page :: Int }
+    deriving (Eq, Show)
+
+jm = Person "julie" 108
+ca = Person "chris" 16
+
+
+-- Exercises: How Does Your Garden Grow?
+
+-- 1 - "glaube" 4
+data FlowerType = Gardenia
+    | Daisy
+    | Rose
+    | Lilac
+    deriving Show
+
+type Gardener = String
+
+data Garden =
+    Garden Gardener FlowerType
+    deriving Show
+
+
+-- Constructing and deconstructing values
+
+data GuessWhat =
+    Chickenbutt deriving (Eq, Show)
+    
+data Id a =
+    MkId a deriving (Eq, Show)
+
+data Product a b =
+    Product a b deriving (Eq, Show)
+
+data Sum a b =
+    First a
+    | Second b
+    deriving (Eq, Show)
+
+data RecordProduct a b =
+    RecordProduct { pfirst :: a
+                  , psecond :: b }
+    deriving (Eq, Show)
+
+
+newtype NumCow =
+        NumCow Int
+        deriving (Eq, Show)
+
+newtype NumPig =
+        NumPig Int
+        deriving (Eq, Show)
+
+data Farmhouse =
+        Farmhouse NumCow NumPig
+        deriving (Eq, Show)
+
+type Farmhouse' = Product NumCow NumPig    
+
+
+newtype NumSheep =
+    NumSheep Int
+    deriving (Eq, Show)
+    
+data BigFarmhouse =
+    BigFarmhouse NumCow NumPig NumSheep
+    deriving (Eq, Show)
+
+type BigFarmhouse' =
+    Product NumCow (Product NumPig NumSheep)
+
+
+type Name = String
+type Age = Int
+type LovesMud = Bool
+
+
+type PoundsOfWool = Int
+
+data CowInfo =
+    CowInfo Name Age
+    deriving (Eq, Show)
+
+data PigInfo =
+    PigInfo Name Age LovesMud
+    deriving (Eq, Show)
+
+data SheepInfo =
+    SheepInfo Name Age PoundsOfWool
+    deriving (Eq, Show)
+
+data Animal =
+    Cow CowInfo
+    | Pig PigInfo
+    | Sheep SheepInfo
+    deriving (Eq, Show)
+
+type Animal' =
+    Sum CowInfo (Sum PigInfo SheepInfo)
+
+
+bess' = (CowInfo "Bess" 4)
+bess = First bess' :: Animal'
+
+e' = Second (SheepInfo "Elmer" 5 5)
+elmer = Second e' :: Animal'
+
+
+type Awesome = Bool
+
+person :: Product Name Awesome
+person = Product "Simon" True
+
+
+data OperatingSystem =
+    GnuPlusLinux
+    | OpenBSDPlusNevermindJustBSDStill
+    | Mac
+    | Windows
+    deriving (Eq, Show)
+    
+data ProgLang =
+    Haskell
+    | Agda
+    | Idris
+    | PureScript
+    deriving (Eq, Show)
+
+data Programmer =
+    Programmer { os :: OperatingSystem
+               , lang :: ProgLang }
+    deriving (Eq, Show)
+
+    
+nineToFive :: Programmer
+nineToFive = Programmer { os = Mac
+                        , lang = Haskell }
+
+feelingWizardly :: Programmer
+feelingWizardly = Programmer { lang = Agda
+                             , os = GnuPlusLinux }
+
+-- Exercise: Programmers
+allOperatingSystems :: [OperatingSystem]
+allOperatingSystems =
+    [ GnuPlusLinux
+    , OpenBSDPlusNevermindJustBSDStill
+    , Mac
+    , Windows
+    ]
+
+allLanguages :: [ProgLang]
+allLanguages =
+    [Haskell, Agda, Idris, PureScript]
+
+allProgrammers :: [Programmer]
+allProgrammers = [Programmer o l | o <- allOperatingSystems, l <- allLanguages]
+
+
+-- Deconstructing values
+
+newtype Acres = Acres Int deriving Show
+
+-- FarmerType is a Sum
+data FarmerType = DairyFarmer
+    | WheatFarmer
+    | SoybeanFarmer
+    deriving (Show, Eq)
+
+-- Farmer is a plain ole product of
+-- Name, Acres, and FarmerType
+data Farmer =
+    Farmer Name Acres FarmerType
+    deriving Show
+
+
+isDairyFarmer :: Farmer -> Bool
+isDairyFarmer (Farmer _ _ DairyFarmer) = True
+isDairyFarmer _ = False
+
+isDairyFarmer2 :: Farmer -> Bool
+isDairyFarmer2 (Farmer _ _ ty) = ty == DairyFarmer
+        
+
+-- ?????????????????????? see Persopn { name :: Name }
+data FarmerRec =
+    FarmerRec { name :: Name
+              , acres :: Acres
+              , farmerType :: FarmerType }
+    deriving Show
+    
+isDairyFarmerRec :: FarmerRec -> Bool
+isDairyFarmerRec farmer =
+    case farmerType farmer of
+        DairyFarmer -> True
+        _ -> False
+
+
+-- Exercises: The Quad
+
+-- 1
+data Quad =
+    One
+    | Two
+    | Three
+    | Four
+    deriving (Eq, Show, Enum, Bounded)
+
+-- how many different forms can this take?
+eQuad :: Either Quad Quad
+eQuad = Left One
+-- ...
+-- eQuad = Left Four
+-- eQuad = Right One
+-- ...
+-- eQuad = Right Four
+-- ===>  4
+
+-- 2 - 16, i.e. (4 * 4)
+
+-- 3 - 16, i.e. (4 * 4)
+
+-- 4 - 8, i.e. (2 * 2 * 2)
+
+-- 5 - 8, i.e. (2 * 2 * 2)
+
+-- 6 - 32, i.e. (2 * 4 * 4) or 0b10_00_00
+
+
+-- Binary Tree
+
+data BinaryTree a =
+    Leaf
+    | Node (BinaryTree a) a (BinaryTree a)
+    deriving (Eq, Ord, Show)
+
+insert' :: Ord a => a -> BinaryTree a
+                    -> BinaryTree a
+insert' b Leaf = Node Leaf b Leaf
+insert' b (Node left a right)
+    | b == a = Node left a right
+    | b < a = Node (insert' b left) a right
+    | b > a = Node left a (insert' b right)    
+
+t1 = insert' 10 Leaf
+t2 = insert' 13 t1    
+t3 = insert' 15 t2    
+t4 = insert' 5 t3   
+
+
+mapTree :: (a -> b) -> BinaryTree a
+           -> BinaryTree b
+mapTree _ Leaf = Leaf
+mapTree f (Node left a right) =
+    Node (mapTree f left) (f a) (mapTree f right)
+
+
+testTree :: BinaryTree Integer
+testTree =
+    Node (Node Leaf 1 Leaf)
+    2
+    (Node Leaf 3 Leaf)    
+
+preorder :: BinaryTree a -> [a]
+preorder Leaf = []
+preorder (Node left a right) =
+    [a] ++ (preorder left) ++ (preorder right)
+
+inorder :: BinaryTree a -> [a]
+inorder Leaf = []
+inorder (Node left a right) =
+    (inorder left) ++ [a] ++ (inorder right)
+
+postorder :: BinaryTree a -> [a]
+postorder Leaf = []
+postorder (Node left a right) =
+    (postorder right) ++ [a] ++ (postorder left)
+
+
+foldTree :: (a -> b -> b) -> b -> BinaryTree a
+            -> b
+foldTree f b Leaf = b
+foldTree f b (Node left a right) =
+    f a (foldTree f (foldTree f b right) left)
+
+
+-- Chapter Exercises
+
+data Weekday =
+    Monday
+    | Tuesday
+    | Wednesday
+    | Thursday
+    | Friday
+
+
+-- Ciphers
+keyword = "ALLY"
+keyword_len = length keyword
+
+cipher_char_shift :: Char -> Int
+cipher_char_shift a = ord a - ord 'A'
+
+test_text = "MEET AT DAWN"
+test_ciphered = "MPPR AE OYWY"
+
+vigenère_kw :: Int -> String -> String
+vigenère_kw _ "" = ""
+vigenère_kw ix (c:cs) = 
+    let r = keyword !! (rem ix keyword_len) in
+        case c of
+            ' ' -> ' ' : (vigenère_kw ix cs)
+            _ -> r : (vigenère_kw (ix + 1) cs)
+
+cipher :: Int -> Char -> Char
+cipher _ ' ' = ' '
+cipher x c = 
+    let code = ord c
+        index = code - ord 'A'
+        codedix = rem (index + x) 26
+        coded = codedix + ord 'A' in
+    chr coded
+
+                        
+vigenère :: String -> String
+vigenère txt =
+    let m = vigenère_kw 0 txt
+        o = map (\c -> if c == ' ' then 0 else ord c - ord 'A') m 
+        z = zip txt o in
+    map (\(c, o) -> cipher o c) z
+
+
+
+-- As-patterns
+
+asPattern :: String -> (Char, String, String)
+asPattern txt@(c:cs) = (c, cs, txt)
+
+-- 1
+isSubseqOf :: (Eq a) => [a] -> [a]
+              -> Bool
+isSubseqOf [] _ = True
+isSubseqOf _ [] = False
+isSubseqOf sx@(s:ss) (t:ts) =
+    ((s == t) && (isSubseqOf ss ts)) || (isSubseqOf sx ts)
+
+-- isSubseqOf "blah" "blahwoot"
+-- isSubseqOf "blah" "wootblah"
+-- isSubseqOf "blah" "wboloath"
+-- isSubseqOf "blah" "wootbla"
+-- isSubseqOf "blah" "halbwoot"
+-- isSubseqOf "blah" "xxblawhoot"
+-- isSubseqOf "blah" "bla"
+
+-- Language exercises
+-- 1
+capitalizeWord :: String -> String
+capitalizeWord "" = ""
+capitalizeWord (c:cs) = (toUpper c : cs)
+
+-- 2
+capitalizeSentence :: String -> String
+capitalizeSentence "" = ""
+capitalizeSentence (' ':cs) = " " ++ capitalizeSentence cs
+capitalizeSentence txt@(_:_) = capitalizeWord txt
+
+capitalizeParagraph :: String -> String
+capitalizeParagraph "" = ""
+capitalizeParagraph txt = 
+    let sentences = (mySplit '.' txt) in
+        concat $ map (\s -> (capitalizeSentence s) ++ ".") sentences
+
+-- capitalizeParagraph "blah. woot ha."
+
+
+-- Phone exercise
+
+-- 1
+data DaPhone = DaPhone [String] deriving Show
+        
+phone_layout = DaPhone
+        [
+            "1",
+            "ABC2",
+            "DEF3",
+            "GHI4",
+            "JKL5",
+            "MNO6",
+            "PQRS7",
+            "TUV8",
+            "WXYZ9",
+            "+ 0"
+        ]
+
+
+-- 2
+convo :: [String]
+convo =
+    ["Wanna play 20 questions",
+    "Ya",
+    "U 1st haha",
+    "Lol ok. Have u ever tasted alcohol",
+    "Lol ya",
+    "Wow ur cool haha. Ur turn",
+    "Ok. Do u think I am pretty Lol",
+    "Lol ya",
+    "Just making sure rofl ur turn"]
+
+-- validButtons = "1234567890*#"
+type Digit = Char
+
+-- Valid presses: 1 and up
+type Presses = Int
+
+reverseTaps :: DaPhone -> Char
+               -> [(Digit, Presses)]
+reverseTaps (DaPhone pl) c = 
+    let ch = toUpper c
+        shift = if isUpper c then [('*',1)] else []
+        key = find (\x -> elem ch x) pl in
+        case key of
+            Nothing -> []
+            Just k -> let p = elemIndex ch k in
+                case p of
+                    Nothing -> []
+                    Just pos -> shift ++ [((last k), pos + 1)]
+
+-- assuming the default phone definition
+-- 'a' -> [('2', 1)]
+-- 'A' -> [('*', 1), ('2', 1)]
+cellPhonesDead :: DaPhone -> String
+                -> [(Digit, Presses)]
+cellPhonesDead _ "" = []
+cellPhonesDead pl (c:cs) = (reverseTaps pl c) ++ cellPhonesDead pl cs
+-- cellPhonesDead phone_layout "Test"
+
+-- 3
+fingerTaps :: [(Digit, Presses)] -> Presses
+fingerTaps keys = foldr (\(d,p) b -> p + b) 0 keys
+
+
+-- 4
+mostPopularLetter :: String -> Char
+mostPopularLetter text = 
+    let letters = groupBy (==) $ sortBy (\c1 c2 -> compare c2 c1) text
+        popular = sortBy (\s1 s2 -> compare (length s2) (length s1)) letters in
+        head $ head $ popular
+
+mostPopularLetterCost :: String -> Int
+mostPopularLetterCost text = 
+    let popular = mostPopularLetter text 
+        count = foldr (\a b -> if a == popular then b + 1 else b) 0 text
+        presses = cellPhonesDead phone_layout [popular] in
+        count * length presses
+
+
+-- 5
+coolestLtr :: [String] -> Char
+coolestLtr text = 
+    let letters = groupBy (==) $ sortBy compare $ map mostPopularLetter text
+        popular = sortBy (\s1 s2 -> compare (length s2) (length s1)) letters in
+        head $ head popular
+
+coolestWord :: [String] -> String
+coolestWord text = 
+    let words = squish $  map myWords text
+        count = groupBy (==) $ sortBy (\s1 s2 -> compare (length s2) (length s1)) words 
+        popular = sortBy (\s1 s2 -> compare (length s2) (length s1)) count in
+        head $ head  popular
+
+
+-- Hutton’s Razor
+
+-- 1
+data Expr
+    = Lit Integer
+    | Add Expr Expr
+
+eval :: Expr -> Integer
+eval expr = 
+    case expr of
+        Lit i -> i
+        Add e1 e2 -> (eval e1) + (eval e2)
+
+-- eval (Add (Lit 1) (Lit 9001))
+
+-- 2
+printExpr :: Expr -> String
+printExpr expr =  
+    case expr of
+        Lit i -> show i
+        Add e1 e2 -> (printExpr e1) ++ " + " ++ (printExpr e2)
+
+-- printExpr (Add (Lit 1) (Lit 9001))
+a1 = Add (Lit 9001) (Lit 1)
+a2 = Add a1 (Lit 20001)
+a3 = Add (Lit 1) a2
+-- printExpr a3
 
 -------------------------------------------------------
 -- chapter 12 - Signaling adversity
