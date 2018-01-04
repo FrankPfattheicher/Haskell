@@ -10,6 +10,8 @@ import Data.Time
 import Data.Int
 import Data.List
 
+-- ?????????????????????? import Data.Text
+
 
 someFunc :: IO ()
 someFunc = putStrLn "someFunc"
@@ -514,8 +516,16 @@ instance TooMany (Int, Int) where
 -- 3
 instance (Num a, TooMany a) => TooMany (a, a) where
     tooMany (i, j) = False
+-- ??????????????????????? tooMany (i, j) = (i + j) > 43
+-- * Could not deduce (Ord a) arising from a use of `>'
+--   from the context: (Num a, TooMany a)
+--   bound by the instance declaration at src\Lib.hs:517:10-45
+-- Possible fix:
+--   add (Ord a) to the context of the instance declaration
+-- * In the expression: (i + j) > 43
+--   In an equation for `tooMany': tooMany (i, j) = (i + j) > 43
+--   In the instance declaration for `TooMany (a, a)'
 
--- ????????????????????????????????????????????????????????????????
 
 
 -- Exercises: Pity the Bool
@@ -723,7 +733,8 @@ isDairyFarmer2 :: Farmer -> Bool
 isDairyFarmer2 (Farmer _ _ ty) = ty == DairyFarmer
         
 
--- ?????????????????????? see Persopn { name :: Name }
+-- ?????????????????????? see Person { name :: Name }
+
 data FarmerRec =
     FarmerRec { name :: Name
               , acres :: Acres
@@ -1038,8 +1049,331 @@ a2 = Add a1 (Lit 20001)
 a3 = Add (Lit 1) a2
 -- printExpr a3
 
+
 -------------------------------------------------------
 -- chapter 12 - Signaling adversity
 -------------------------------------------------------
 
+-- 1 - *
+xid :: a -> a
+xid a = a
+
+-- 2 - ??????????????
+--rrr :: a -> f a
+--rrr a = a
+
+
+-- String processing
+
+-- 1
+notThe :: String -> Maybe String
+notThe the = case the of
+    "the" -> Nothing
+    _ -> Just the
+
+replaceThe :: String -> String
+replaceThe text = 
+    let words = myWords text
+        nothe = map notThe words
+        toa = map (\m -> case m of { Just w -> w; _ -> "a"}) nothe
+    in
+        foldr (\w s -> w ++ " " ++ s) "" toa
+
+
+-- 2
+isVowel :: Char -> Bool
+isVowel c = elem c "aeiouAEIOU"
+
+countTheBeforeVowel :: String -> Integer
+countTheBeforeVowel text =
+    let words = myWords text
+        pairs = zip words $ drop 1 words
+        thevo = map (\(t,w) -> (t == "the") && isVowel (head w)) pairs
+    in  
+        foldr (\a b -> if a then b + 1 else b) 0 thevo
+
+-- countTheBeforeVowel "the evil cow and the old cat"
+
+
+-- 3
+countVowels :: String -> Integer
+countVowels text = 
+    toInteger $ length $ foldr (\a b -> b ++ if isVowel a then [a] else []) "" text
+
+-- countVowels "the cow"
+-- countVowels "Mikolajczak"
+
+
+-- Validate the word
+
+newtype Word' = 
+    Word' String
+    deriving (Eq, Show)
+
+
+mkWord :: String -> Maybe Word'
+mkWord text = 
+    let vovels = fromIntegral $ countVowels text
+        consonants = (length text) - vovels
+    in
+        if vovels > consonants
+        then Nothing
+        else Just (Word' text)
+
+
+-- It’s only Natural
+
+data Nat =
+    Zero
+    | Succ Nat
+    deriving (Eq, Show)
+
+
+natToInteger :: Nat -> Integer
+natToInteger Zero = 0
+natToInteger (Succ x) = 1 + natToInteger x
+        
+-- natToInteger Zero
+-- 0
+-- natToInteger (Succ Zero)
+-- 1
+-- natToInteger (Succ (Succ Zero))
+-- 2
+
+integerToNat :: Integer -> Maybe Nat
+integerToNat n = 
+    case compare n 0 of
+        LT -> Nothing
+        EQ -> Just Zero
+        GT -> case integerToNat (n-1) of
+                Just Zero -> Just (Succ Zero)
+                Just x -> Just (Succ x)
+
+-- >>> integerToNat 0
+-- Just Zero
+-- >>> integerToNat 1
+-- Just (Succ Zero)
+-- >>> integerToNat 2
+-- Just (Succ (Succ Zero))
+-- >>> integerToNat (-1)
+-- Nothing
+
+
+-- Small library for Maybe
+
+-- 1
+
+-- >>> isJust (Just 1)
+-- True
+-- >>> isJust Nothing
+-- False
+isJust :: Maybe a -> Bool
+isJust (Just x) = True
+isJust _ = False
+
+-- >>> isNothing (Just 1)
+-- False
+-- >>> isNothing Nothing
+-- True
+isNothing :: Maybe a -> Bool
+isNothing Nothing = True
+isNothing _ = False
+
+
+-- 2
+
+-- >>> mayybee 0 (+1) Nothing
+-- 0
+-- >>> mayybee 0 (+1) (Just 1)
+-- 2
+mayybee :: b -> (a -> b) -> Maybe a -> b
+mayybee b f Nothing = b
+mayybee b f (Just a) = f a
+
+
+-- 3
+
+-- >>> fromMaybe 0 Nothing
+-- 0
+-- >>> fromMaybe 0 (Just 1)
+-- 1
+fromMaybe :: a -> Maybe a -> a
+fromMaybe a Nothing = a
+fromMaybe _ (Just v) = v
+
+
+-- 4
+
+-- >>> listToMaybe [1, 2, 3]
+-- Just 1
+-- >>> listToMaybe []
+-- Nothing
+listToMaybe :: [a] -> Maybe a
+listToMaybe [] = Nothing
+listToMaybe (x:xs) = Just x
+
+-- >>> maybeToList (Just 1)
+-- [1]
+-- >>> maybeToList Nothing
+-- []
+maybeToList :: Maybe a -> [a]
+maybeToList Nothing = []
+maybeToList (Just a) = [a]
+
+
+-- 5
+-- >>> catMaybes [Just 1, Nothing, Just 2]
+-- [1, 2]
+-- >>> let xs = take 3 $ repeat Nothing
+-- >>> catMaybes xs
+-- []
+catMaybes :: [Maybe a] -> [a]
+catMaybes [] = []
+catMaybes (Nothing:xs) = catMaybes xs
+catMaybes ((Just x):xs) = x : catMaybes xs
+
+
+-- 6
+
+-- >>> flipMaybe [Just 1, Just 2, Just 3]
+-- Just [1, 2, 3]
+-- >>> flipMaybe [Just 1, Nothing, Just 3]
+-- Nothing
+flipMaybe :: [Maybe a] -> Maybe [a]
+flipMaybe [] = Just []
+flipMaybe (Nothing:xs) = Nothing
+flipMaybe ((Just x):xs) = 
+    case flipMaybe xs of
+        Nothing -> Nothing
+        Just xx -> Just (x : xx)
+
+
+
+-- Small library for Either
+
+-- 1
+lefts' :: [Either a b] -> [a]
+lefts' [] = []
+lefts' (x:xs) = 
+    case x of
+        Left a -> [a] ++ lefts' xs
+        Right _ -> lefts' xs
+
+-- 2
+rights' :: [Either a b] -> [b]
+rights' list = foldr (\a b -> case a of {Right a -> [a] ++ b; Left _ -> b}) [] list
+
+
+-- 3
+partitionEithers' :: [Either a b] -> ([a], [b])
+partitionEithers' list = (lefts' list, rights' list)
+
+-- partionEithers' [Left 2, Right 3, Left 4]
+
+-- ??????????????????????
+-- <interactive>:289:1: error:
+-- * Variable not in scope:
+--     partionEithers' :: [Either Integer Integer] -> t
+-- * Perhaps you meant partitionEithers' (line 1269)
+
+
+
+-- 4
+eitherMaybe' :: (b -> c) -> Either a b
+            -> Maybe c
+eitherMaybe' f e = 
+    case e of
+        Left l -> Nothing
+        Right r -> Just $ f r
+
+
+-- 5
+either' :: (a -> c)
+    -> (b -> c)
+    -> Either a b
+    -> c
+
+either' fa fb e = 
+    case e of
+        Left l -> fa l
+        Right r -> fb r
+-- either' (+1) (+2) (Left 5)
+-- 6
+-- either' (+1) (+2) (Right 5)
+-- 7    
+
+
+-- 6
+eitherMaybe'' :: (b -> c) -> Either a b
+        -> Maybe c
+eitherMaybe'' f e = either' (\a -> Nothing) (\b -> Just (f b)) e 
+    
+
+
+-- Write your own iterate and unfoldr
+
+-- 1
+myIterate :: (a -> a) -> a -> [a]
+myIterate f a = [a] ++ myIterate f (f a)
+
+-- 2
+myUnfoldr :: (b -> Maybe (a, b)) -> b
+          -> [a]
+myUnfoldr f b = 
+    case f b of
+        Nothing -> []
+        Just (x,y) -> [x] ++ myUnfoldr f y
+
+-- take 10 $ myUnfoldr (\b -> Just (b, b+1)) 0
+-- [0,1,2,3,4,5,6,7,8,9]
+
+
+-- 3
+betterIterate :: (a -> a) -> a -> [a]
+betterIterate f x = myUnfoldr (\b -> Just (b, f b)) x
+
+-- take 10 $ betterIterate (+1) 0
+-- [0,1,2,3,4,5,6,7,8,9]
+
+
+
+-- Finally something other than a list!
+
+-- 1
+unfold :: (a -> Maybe (a,b,a)) -> a
+          -> BinaryTree b
+unfold f a = 
+    case f a of
+        Nothing -> Leaf
+        Just (x1,y,x2) -> Node (unfold f x1) y (unfold f x2)
+
+
+-- unfold (\x -> if x > 0 then Just (x-1,x,x-1) else Nothing) 5
+
+
+
+-- 2
+treeBuild :: Integer -> BinaryTree Integer
+treeBuild n = unfold (\x -> if x < n then Just (x+1,x,x+1) else Nothing) 0
+
+
+-- treeBuild 0
+-- Leaf
+
+-- treeBuild 1
+-- Node Leaf 0 Leaf
+
+-- treeBuild 2
+-- Node (Node Leaf 1 Leaf)
+--      0
+--      (Node Leaf 1 Leaf)
+
+-- treeBuild 3
+-- Node (Node (Node Leaf 2 Leaf)
+--            1
+--            (Node Leaf 2 Leaf))
+--      0
+-- (Node (Node Leaf 2 Leaf)
+--             1
+--             (Node Leaf 2 Leaf))
 
