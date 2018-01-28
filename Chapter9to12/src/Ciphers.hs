@@ -1,5 +1,5 @@
 
-module Cipher 
+module Ciphers 
     ( cipher
     ) where
 

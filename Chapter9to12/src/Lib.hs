@@ -10,7 +10,7 @@ import Data.Time
 import Data.Int
 import Data.List
 
--- ?????????????????????? import Data.Text
+import qualified Data.Text as T
 
 
 someFunc :: IO ()
@@ -277,7 +277,9 @@ filterDbDate :: [DatabaseItem] -> [UTCTime]
 filterDbDate [] = []
 filterDbDate (x:xs) = case x of
         DbDate dt -> [dt] ++ filterDbDate xs
-        _ -> filterDbDate xs
+        _         -> filterDbDate xs
+
+-- filterDbDate2 xs = [x | DbDate x <- xs] 
 
 -- 2
 filterDbNumber :: [DatabaseItem] -> [Integer]
@@ -514,9 +516,8 @@ instance TooMany (Int, Int) where
     tooMany (i, j) = (i + j) > 43
 
 -- 3
-instance (Num a, TooMany a) => TooMany (a, a) where
-    tooMany (i, j) = False
--- ??????????????????????? tooMany (i, j) = (i + j) > 43
+instance (Num a, Ord a, TooMany a) => TooMany (a, a) where
+    tooMany (i, j) = (i + j) > 43
 -- * Could not deduce (Ord a) arising from a use of `>'
 --   from the context: (Num a, TooMany a)
 --   bound by the instance declaration at src\Lib.hs:517:10-45
@@ -1058,9 +1059,9 @@ a3 = Add (Lit 1) a2
 xid :: a -> a
 xid a = a
 
--- 2 - ??????????????
---rrr :: a -> f a
---rrr a = a
+-- 2 - ?????????????? f
+-- rrr :: a -> f a
+-- rrr a = a
 
 
 -- String processing
@@ -1268,14 +1269,7 @@ rights' list = foldr (\a b -> case a of {Right a -> [a] ++ b; Left _ -> b}) [] l
 partitionEithers' :: [Either a b] -> ([a], [b])
 partitionEithers' list = (lefts' list, rights' list)
 
--- partionEithers' [Left 2, Right 3, Left 4]
-
--- ??????????????????????
--- <interactive>:289:1: error:
--- * Variable not in scope:
---     partionEithers' :: [Either Integer Integer] -> t
--- * Perhaps you meant partitionEithers' (line 1269)
-
+-- partitionEithers' [Left 2, Right 3, Left 4]
 
 
 -- 4
@@ -1378,6 +1372,3 @@ treeBuild n = unfold (\x -> if x < n then Just (x+1,x,x+1) else Nothing) 0
 --             (Node Leaf 2 Leaf))
 
 
-
-
--- ?????????????????? 2+2

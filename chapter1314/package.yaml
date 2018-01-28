@@ -1,44 +1,44 @@
-name:                Chapter9to12
+name:                chapter1314
 version:             0.1.0.0
-github:              "githubuser/Chapter9to12"
+github:              "githubuser/chapter1314"
 license:             BSD3
 author:              "Author name here"
 maintainer:          "example@example.com"
-copyright:           "2017 Author name here"
+copyright:           "2018 Author name here"
 
 extra-source-files:
 - README.md
 - ChangeLog.md
 
 # Metadata used when publishing your package
-synopsis:            Short description of your package
+# synopsis:            Short description of your package
 # category:            Web
 
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on Github at <https://github.com/githubuser/Chapter9to12#readme>
+description:         Please see the README on Github at <https://github.com/githubuser/chapter1314#readme>
 
 dependencies:
--   base >= 4.7 && < 5
--   text
+- base >= 4.7 && < 5
+- hspec
 
 library:
   source-dirs: src
 
 executables:
-  Chapter9to12-exe:
+  main:
     main:                Main.hs
-    source-dirs:         app src
+    source-dirs:         app
     ghc-options:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - Chapter9to12
+    - chapter1314
 
 tests:
-  Chapter9to12-test:
+  chapter1314-test:
     main:                Spec.hs
     source-dirs:         test
     ghc-options:
@@ -46,4 +46,4 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - Chapter9to12
+    - chapter1314
